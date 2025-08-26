@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Informes - Supervisor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --text-color: #333;
+            --light-gray: #f5f5f5;
+            --border-color: #ddd;
+            --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(120deg, var(--primary-color), #2c3e50);
+            color: white;
+        }
+        
+        h1 {
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: white;
+        }
+        
+        .config-panel {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .config-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .config-input {
+            padding: 10px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            width: 250px;
+        }
+        
+        .config-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .selector {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            gap: 20px;
+        }
+        
+        .selector-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            background-color: var(--light-gray);
+            color: var(--text-color);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .selector-btn.active {
+            background: linear-gradient(120deg, var(--primary-color), #2c3e50);
+            color: white;
+        }
+        
+        .selector-btn:hover:not(.active) {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+        
+        .form-container {
+            display: none;
+            padding: 0 30px 30px;
+        }
+        
+        .form-container.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .signature-field {
+            background-color: #f9f9f9;
+            border: 1px dashed #bbb;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .recipients {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .recipient {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .recipient input {
+            flex: 1;
+        }
+        
+        .remove-recipient {
+            color: #e74c3c;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        .add-recipient {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px dashed var(--primary-color);
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .add-recipient:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        .submit-btn {
+            background: linear-gradient(120deg, var(--primary-color), #2c3e50);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            display: block;
+            margin: 40px auto 0;
+            transition: all 0.3s;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .required {
+            color: #e74c3c;
+        }
+        
+        .form-section {
+            background: var(--light-gray);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        
+        .form-section-title {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            background-color: #2ecc71;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 1000;
+            max-width: 400px;
+        }
+        
+        .notification.error {
+            background-color: #e74c3c;
+        }
+        
+        .email-status {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #777;
+        }
+        
+        @media (max-width: 768px) {
+            .selector {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .selector-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .config-form {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .recipient {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .remove-recipient {
+                align-self: flex-end;
+            }
+            
+            .notification {
+                left: 20px;
+                right: 20px;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="notification" id="notification">¡Correo enviado con éxito!</div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-file-contract"></i>
+            </div>
+            <h1>Sistema de Informes</h1>
+            <p>Seleccione el tipo de informe que desea completar</p>
+        </header>
+        
+        <div class="config-panel">
+            <h3 style="text-align: center; margin-bottom: 15px;">Configuración de EmailJS</h3>
+            
+            <div class="config-form">
+                <input type="text" id="public-key" class="config-input" placeholder="Public Key de EmailJS">
+                <input type="text" id="service-id" class="config-input" placeholder="Service ID de EmailJS">
+                <input type="text" id="template-incidencia" class="config-input" placeholder="Template ID Incidencia">
+                <input type="text" id="template-feedback" class="config-input" placeholder="Template ID Feedback">
+                <button class="config-btn" id="save-config">Guardar Configuración</button>
+            </div>
+        </div>
+        
+        <div class="selector">
+            <button class="selector-btn active" data-form="incidencia">
+                <i class="fas fa-exclamation-circle"></i> Informe de Incidencia
+            </button>
+            <button class="selector-btn" data-form="feedback">
+                <i class="fas fa-comment-dots"></i> Informe de Feedback
+            </button>
+        </div>
+        
+        <!-- Formulario de Incidencia -->
+        <form id="incidencia-form" class="form-container active">
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="fas fa-user-friends"></i> Información General
+                </div>
+                
+                <div class="form-group">
+                    <label for="incidencia-colaborador">Colaborador <span class="required">*</span></label>
+                    <input type="text" id="incidencia-colaborador" required placeholder="Nombre del colaborador">
+                </div>
+                
+                <div class="form-group">
+                    <label for="incidencia-supervisor">Supervisor <span class="required">*</span></label>
+                    <input type="text" id="incidencia-supervisor" required placeholder="Nombre del supervisor">
+                </div>
+                
+                <div class="form-group">
+                    <label for="incidencia-numero">N° de incidencia <span class="required">*</span></label>
+                    <input type="text" id="incidencia-numero" required placeholder="Número de referencia">
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="fas fa-info-circle"></i> Detalles de la Incidencia
+                </div>
+                
+                <div class="form-group">
+                    <label for="incidencia-asunto">Asunto <span class="required">*</span></label>
+                    <input type="text" id="incidencia-asunto" required placeholder="Asunto de la incidencia">
+                </div>
+                
+                <div class="form-group">
+                    <label for="incidencia-fecha">Fecha <span class="required">*</span></label>
+                    <input type="date" id="incidencia-fecha" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="incidencia-descripcion">Indicar lo sucedido <span class="required">*</span></label>
+                    <textarea id="incidencia-descripcion" required placeholder="Describa los detalles de la incidencia..."></textarea>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="fas fa-signature"></i> Firmas
+                </div>
+                
+                <div class="form-group">
+                    <label for="incidencia-firma-supervisor">Firma Supervisor <span class="required">*</span></label>
+                    <input type="text" id="incidencia-firma-supervisor" class="signature-field" required placeholder="Nombre del supervisor para firma">
+                </div>
+                
+                <div class="form-group">
+                    <label for="incidencia-firma-colaborador">Firma Colaborador <span class="required">*</span></label>
+                    <input type="text" id="incidencia-firma-colaborador" class="signature-field" required placeholder="Nombre del colaborador para firma">
+                </div>
+            </div>
+            
+            <div class="recipients">
+                <h3><i class="fas fa-paper-plane"></i> Destinatarios</h3>
+                <p style="color: #777; margin-bottom: 15px;">Seleccione hasta 3 destinatarios para el informe</p>
+                
+                <div class="recipient">
+                    <input type="email" class="recipient-email" required placeholder="email@ejemplo.com">
+                    <button type="button" class="remove-recipient" style="display: none;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <button type="button" class="add-recipient">
+                <i class="fas fa-plus"></i> Agregar destinatario
+            </button>
+            
+            <div class="email-status" id="email-status-incidencia"></div>
+            
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-paper-plane"></i> Enviar Informe
+            </button>
+        </form>
+        
+        <!-- Formulario de Feedback -->
+        <form id="feedback-form" class="form-container">
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="fas fa-user-friends"></i> Información General
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedback-colaborador">Colaborador <span class="required">*</span></label>
+                    <input type="text" id="feedback-colaborador" required placeholder="Nombre del colaborador">
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedback-supervisor">Supervisor <span class="required">*</span></label>
+                    <input type="text" id="feedback-supervisor" required placeholder="Nombre del supervisor">
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedback-numero">N° de feedback <span class="required">*</span></label>
+                    <input type="text" id="feedback-numero" required placeholder="Número de referencia">
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="fas fa-comments"></i> Detalles del Feedback
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedback-asunto">Asunto <span class="required">*</span></label>
+                    <input type="text" id="feedback-asunto" required placeholder="Asunto del feedback">
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedback-fecha">Fecha <span class="required">*</span></label>
+                    <input type="date" id="feedback-fecha" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedback-tema">Indicar tema tratado <span class="required">*</span></label>
+                    <textarea id="feedback-tema" required placeholder="Describa los temas tratados en la sesión de feedback..."></textarea>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="fas fa-signature"></i> Firmas
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedback-firma-supervisor">Firma Supervisor <span class="required">*</span></label>
+                    <input type="text" id="feedback-firma-supervisor" class="signature-field" required placeholder="Nombre del supervisor para firma">
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedback-firma-colaborador">Firma Colaborador <span class="required">*</span></label>
+                    <input type="text" id="feedback-firma-colaborador" class="signature-field" required placeholder="Nombre del colaborador para firma">
+                </div>
+            </div>
+            
+            <div class="recipients">
+                <h3><i class="fas fa-paper-plane"></i> Destinatarios</h3>
+                <p style="color: #777; margin-bottom: 15px;">Seleccione hasta 3 destinatarios para el informe</p>
+                
+                <div class="recipient">
+                    <input type="email" class="recipient-email" required placeholder="email@ejemplo.com">
+                    <button type="button" class="remove-recipient" style="display: none;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <button type="button" class="add-recipient">
+                <i class="fas fa-plus"></i> Agregar destinatario
+            </button>
+            
+            <div class="email-status" id="email-status-feedback"></div>
+            
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-paper-plane"></i> Enviar Informe
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Inicializar EmailJS (se configurará después con los valores del usuario)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar configuración guardada si existe
+            const savedPublicKey = localStorage.getItem('emailjs_public_key');
+            const savedServiceId = localStorage.getItem('emailjs_service_id');
+            const savedTemplateIncidencia = localStorage.getItem('emailjs_template_incidencia');
+            const savedTemplateFeedback = localStorage.getItem('emailjs_template_feedback');
+            
+            if (savedPublicKey) {
+                document.getElementById('public-key').value = savedPublicKey;
+            }
+            if (savedServiceId) {
+                document.getElementById('service-id').value = savedServiceId;
+            }
+            if (savedTemplateIncidencia) {
+                document.getElementById('template-incidencia').value = savedTemplateIncidencia;
+            }
+            if (savedTemplateFeedback) {
+                document.getElementById('template-feedback').value = savedTemplateFeedback;
+            }
+            
+            // Guardar configuración
+            document.getElementById('save-config').addEventListener('click', function() {
+                const publicKey = document.getElementById('public-key').value;
+                const serviceId = document.getElementById('service-id').value;
+                const templateIncidencia = document.getElementById('template-incidencia').value;
+                const templateFeedback = document.getElementById('template-feedback').value;
+                
+                if (publicKey && serviceId) {
+                    // Guardar en localStorage
+                    localStorage.setItem('emailjs_public_key', publicKey);
+                    localStorage.setItem('emailjs_service_id', serviceId);
+                    localStorage.setItem('emailjs_template_incidencia', templateIncidencia);
+                    localStorage.setItem('emailjs_template_feedback', templateFeedback);
+                    
+                    // Inicializar EmailJS
+                    emailjs.init(publicKey);
+                    
+                    showNotification('Configuración guardada correctamente');
+                } else {
+                    showNotification('Por favor, complete al menos Public Key y Service ID', true);
+                }
+            });
+            
+            // Si ya hay configuración guardada, inicializar EmailJS
+            if (savedPublicKey && savedServiceId) {
+                emailjs.init(savedPublicKey);
+            }
+            
+            const selectorButtons = document.querySelectorAll('.selector-btn');
+            const forms = document.querySelectorAll('.form-container');
+            const notification = document.getElementById('notification');
+            
+            function showNotification(message, isError = false) {
+                notification.textContent = message;
+                notification.classList.toggle('error', isError);
+                notification.style.display = 'block';
+                
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 5000);
+            }
+            
+            selectorButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const formId = this.getAttribute('data-form');
+                    
+                    // Actualizar botones
+                    selectorButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Mostrar formulario correspondiente
+                    forms.forEach(form => form.classList.remove('active'));
+                    document.getElementById(`${formId}-form`).classList.add('active');
+                });
+            });
+            
+            // Función para agregar destinatarios
+            function setupAddRecipient() {
+                const addRecipientButtons = document.querySelectorAll('.add-recipient');
+                addRecipientButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const recipientsContainer = this.previousElementSibling;
+                        const recipientCount = recipientsContainer.querySelectorAll('.recipient').length;
+                        
+                        if (recipientCount < 3) {
+                            const newRecipient = document.createElement('div');
+                            newRecipient.className = 'recipient';
+                            newRecipient.innerHTML = `
+                                <input type="email" class="recipient-email" required placeholder="email@ejemplo.com">
+                                <button type="button" class="remove-recipient">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            `;
+                            recipientsContainer.appendChild(newRecipient);
+                            
+                            // Agregar evento para eliminar destinatario
+                            newRecipient.querySelector('.remove-recipient').addEventListener('click', function() {
+                                this.parentElement.remove();
+                                document.querySelectorAll('.add-recipient').forEach(btn => {
+                                    btn.style.display = 'block';
+                                });
+                            });
+                            
+                            if (recipientCount === 2) {
+                                this.style.display = 'none';
+                            }
+                        }
+                    });
+                });
+            }
+            
+            // Función para eliminar destinatarios
+            function setupRemoveRecipient() {
+                document.querySelectorAll('.remove-recipient').forEach(button => {
+                    button.addEventListener('click', function() {
+                        this.parentElement.remove();
+                        document.querySelectorAll('.add-recipient').forEach(btn => {
+                            btn.style.display = 'block';
+                        });
+                    });
+                });
+            }
+            
+            // Inicializar eventos de destinatarios
+            setupAddRecipient();
+            setupRemoveRecipient();
+            
+            // Envío de formularios
+            const formsToSubmit = document.querySelectorAll('form');
+            formsToSubmit.forEach(form => {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    // Verificar que EmailJS está configurado
+                    const publicKey = localStorage.getItem('emailjs_public_key');
+                    const serviceId = localStorage.getItem('emailjs_service_id');
+                    const templateIncidencia = localStorage.getItem('emailjs_template_incidencia');
+                    const templateFeedback = localStorage.getItem('emailjs_template_feedback');
+                    
+                    if (!publicKey || !serviceId) {
+                        showNotification('Por favor, configure EmailJS primero', true);
+                        return;
+                    }
+                    
+                    // Validar destinatarios
+                    const recipientEmails = this.querySelectorAll('.recipient-email');
+                    let validEmails = true;
+                    const emailList = [];
+                    
+                    recipientEmails.forEach(input => {
+                        if (!input.value.match(/\S+@\S+\.\S+/)) {
+                            validEmails = false;
+                            input.style.borderColor = 'red';
+                        } else {
+                            input.style.borderColor = '';
+                            emailList.push(input.value);
+                        }
+                    });
+                    
+                    if (!validEmails || emailList.length === 0) {
+                        showNotification('Por favor, ingrese direcciones de correo válidas', true);
+                        return;
+                    }
+                    
+                    // Determinar tipo de formulario
+                    const isIncidencia = this.id === 'incidencia-form';
+                    const templateId = isIncidencia ? 
+                        (templateIncidencia || 'template_incidencia') : 
+                        (templateFeedback || 'template_feedback');
+                    
+                    // Recopilar datos del formulario
+                    const formData = {
+                        colaborador: this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-colaborador`).value,
+                        supervisor: this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-supervisor`).value,
+                        numero: this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-numero`).value,
+                        asunto: this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-asunto`).value,
+                        fecha: this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-fecha`).value,
+                        descripcion: isIncidencia ? 
+                            this.querySelector('#incidencia-descripcion').value : 
+                            this.querySelector('#feedback-tema').value,
+                        firma_supervisor: this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-firma-supervisor`).value,
+                        firma_colaborador: this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-firma-colaborador`).value,
+                        destinatarios: emailList.join(', '),
+                        tipo: isIncidencia ? 'Incidencia' : 'Feedback'
+                    };
+                    
+                    // Cambiar texto del botón a "Enviando..."
+                    const submitBtn = this.querySelector('.submit-btn');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+                    submitBtn.disabled = true;
+                    
+                    // Obtener elemento de estado de email
+                    const emailStatus = this.querySelector('.email-status');
+                    emailStatus.textContent = `Enviando a ${emailList.length} destinatario(s)...`;
+                    
+                    try {
+                        // Enviar correo a cada destinatario individualmente
+                        const sendPromises = emailList.map(email => {
+                            // Crear datos específicos para cada destinatario
+                            const emailData = {
+                                to_email: email,
+                                to_name: email.split('@')[0],
+                                from_name: formData.supervisor || 'Sistema de Informes',
+                                colaborador: formData.colaborador,
+                                supervisor: formData.supervisor,
+                                numero: formData.numero,
+                                asunto: formData.asunto,
+                                fecha: formData.fecha,
+                                descripcion: formData.descripcion,
+                                firma_supervisor: formData.firma_supervisor,
+                                firma_colaborador: formData.firma_colaborador,
+                                destinatarios: formData.destinatarios,
+                                tipo: formData.tipo
+                            };
+                            
+                            return emailjs.send(serviceId, templateId, emailData);
+                        });
+                        
+                        // Esperar a que todos los correos se envíen
+                        const results = await Promise.allSettled(sendPromises);
+                        
+                        // Contar correos exitosos y fallidos
+                        const successful = results.filter(r => r.status === 'fulfilled').length;
+                        const failed = results.filter(r => r.status === 'rejected').length;
+                        
+                        if (failed === 0) {
+                            showNotification(`¡Informe enviado con éxito a ${successful} destinatario(s)!`);
+                            this.reset();
+                            emailStatus.textContent = `Enviado a ${successful} destinatario(s)`;
+                        } else if (successful > 0) {
+                            showNotification(`Informe enviado a ${successful} destinatario(s), pero falló para ${failed}.`, true);
+                            emailStatus.textContent = `Enviado a ${successful} de ${emailList.length} destinatario(s)`;
+                        } else {
+                            showNotification('Error al enviar el informe a todos los destinatarios', true);
+                            emailStatus.textContent = 'Error en el envío';
+                        }
+                        
+                    } catch (error) {
+                        console.error("Error general:", error);
+                        showNotification('Error al enviar el informe: ' + (error.text || "Error desconocido"), true);
+                        emailStatus.textContent = 'Error en el envío';
+                    } finally {
+                        // Restaurar texto del botón
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
+                });
+            });
+            
+            // Establecer fecha actual por defecto
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('incidencia-fecha').value = today;
+            document.getElementById('feedback-fecha').value = today;
+        });
+    </script>
+</body>
+</html>
+
