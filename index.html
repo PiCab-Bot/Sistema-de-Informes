@@ -88,6 +88,14 @@
             cursor: pointer;
         }
         
+        .imgbb-config {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
         .selector {
             display: flex;
             justify-content: center;
@@ -147,7 +155,7 @@
             color: #555;
         }
         
-        input, textarea {
+        input, textarea, select {
             width: 100%;
             padding: 12px 15px;
             border: 1px solid var(--border-color);
@@ -156,7 +164,7 @@
             transition: border 0.3s;
         }
         
-        input:focus, textarea:focus {
+        input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
@@ -283,6 +291,130 @@
             color: #777;
         }
         
+        /* Estilos para la carga de imágenes */
+        .image-upload {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .image-upload:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .image-upload i {
+            font-size: 2rem;
+            color: #777;
+            margin-bottom: 10px;
+        }
+        
+        .image-preview-container {
+            position: relative;
+            display: inline-block;
+            margin-top: 15px;
+        }
+        
+        .image-preview {
+            display: none;
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .remove-image {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            display: none;
+        }
+        
+        .image-warning {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .upload-progress {
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .severity-levels {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        
+        .severity-btn {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .severity-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .severity-btn.selected {
+            border-color: var(--primary-color);
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .severity-btn.leve.selected {
+            background-color: #2ecc71;
+            border-color: #2ecc71;
+        }
+        
+        .severity-btn.media.selected {
+            background-color: #f39c12;
+            border-color: #f39c12;
+        }
+        
+        .severity-btn.grave.selected {
+            background-color: #e74c3c;
+            border-color: #e74c3c;
+        }
+        
+        .severity-btn.critica.selected {
+            background-color: #9b59b6;
+            border-color: #9b59b6;
+        }
+        
         @media (max-width: 768px) {
             .selector {
                 flex-direction: column;
@@ -308,6 +440,10 @@
                 align-self: flex-end;
             }
             
+            .severity-levels {
+                flex-direction: column;
+            }
+            
             .notification {
                 left: 20px;
                 right: 20px;
@@ -329,7 +465,7 @@
         </header>
         
         <div class="config-panel">
-            <h3 style="text-align: center; margin-bottom: 15px;">Configuración de EmailJS</h3>
+            <h3 style="text-align: center; margin-bottom: 15px;">Configuración de EmailJS e ImgBB</h3>
             
             <div class="config-form">
                 <input type="text" id="public-key" class="config-input" placeholder="Public Key de EmailJS">
@@ -337,6 +473,15 @@
                 <input type="text" id="template-incidencia" class="config-input" placeholder="Template ID Incidencia">
                 <input type="text" id="template-feedback" class="config-input" placeholder="Template ID Feedback">
                 <button class="config-btn" id="save-config">Guardar Configuración</button>
+            </div>
+            
+            <div class="imgbb-config">
+                <h4><i class="fas fa-image"></i> Configuración de ImgBB</h4>
+                <p>Para subir imágenes, necesitas una API key de <a href="https://api.imgbb.com/" target="_blank">ImgBB</a> (gratuita)</p>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <input type="text" id="imgbb-api-key" class="config-input" placeholder="API Key de ImgBB" style="flex: 1;">
+                    <button class="config-btn" id="save-imgbb-config">Guardar Key</button>
+                </div>
             </div>
         </div>
         
@@ -388,8 +533,44 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="nivel-incidencia">Nivel de Incidencia <span class="required">*</span></label>
+                    <div class="severity-levels">
+                        <button type="button" class="severity-btn leve" data-value="leve">Leve</button>
+                        <button type="button" class="severity-btn media" data-value="media">Media</button>
+                        <button type="button" class="severity-btn grave" data-value="grave">Grave</button>
+                        <button type="button" class="severity-btn critica" data-value="critica">Crítica</button>
+                    </div>
+                    <input type="hidden" id="nivel-incidencia" required>
+                </div>
+                
+                <div class="form-group">
                     <label for="incidencia-descripcion">Indicar lo sucedido <span class="required">*</span></label>
                     <textarea id="incidencia-descripcion" required placeholder="Describa los detalles de la incidencia..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Adjuntar imagen (opcional)</label>
+                    <div class="image-upload" id="image-upload">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Haga clic para seleccionar una imagen (máx. 5MB)</p>
+                        <input type="file" id="imagen-incidencia" accept="image/*" style="display: none;">
+                    </div>
+                    <div class="upload-progress" id="upload-progress">
+                        <p>Subiendo imagen a ImgBB: <span id="progress-text">0%</span></p>
+                        <div class="progress-bar">
+                            <div class="progress" id="progress-bar"></div>
+                        </div>
+                    </div>
+                    <div class="image-preview-container">
+                        <img id="image-preview" class="image-preview" alt="Vista previa de la imagen">
+                        <button type="button" class="remove-image" id="remove-image">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="image-warning" id="image-warning">
+                        <i class="fas fa-exclamation-triangle"></i> La imagen es demasiado grande. Se comprimirá para el envío.
+                    </div>
+                    <input type="hidden" id="imagen-url" value="">
                 </div>
             </div>
             
@@ -516,264 +697,436 @@
         </form>
     </div>
 
-    <script>
-        // Inicializar EmailJS (se configurará después con los valores del usuario)
-        document.addEventListener('DOMContentLoaded', function() {
-            // Cargar configuración guardada si existe
-            const savedPublicKey = localStorage.getItem('emailjs_public_key');
-            const savedServiceId = localStorage.getItem('emailjs_service_id');
-            const savedTemplateIncidencia = localStorage.getItem('emailjs_template_incidencia');
-            const savedTemplateFeedback = localStorage.getItem('emailjs_template_feedback');
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // FUNCIÓN DE CODIFICACIÓN - COLOCAR AL PRINCIPIO
+        function encodeForEmailJS(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Cargar configuración guardada si existe
+        const savedPublicKey = localStorage.getItem('emailjs_public_key');
+        const savedServiceId = localStorage.getItem('emailjs_service_id');
+        const savedTemplateIncidencia = localStorage.getItem('emailjs_template_incidencia');
+        const savedTemplateFeedback = localStorage.getItem('emailjs_template_feedback');
+        const savedImgBBApiKey = localStorage.getItem('imgbb_api_key');
+        
+        if (savedPublicKey) document.getElementById('public-key').value = savedPublicKey;
+        if (savedServiceId) document.getElementById('service-id').value = savedServiceId;
+        if (savedTemplateIncidencia) document.getElementById('template-incidencia').value = savedTemplateIncidencia;
+        if (savedTemplateFeedback) document.getElementById('template-feedback').value = savedTemplateFeedback;
+        if (savedImgBBApiKey) document.getElementById('imgbb-api-key').value = savedImgBBApiKey;
+        
+        // Guardar configuración EmailJS
+        document.getElementById('save-config').addEventListener('click', function() {
+            const publicKey = document.getElementById('public-key').value;
+            const serviceId = document.getElementById('service-id').value;
+            const templateIncidencia = document.getElementById('template-incidencia').value;
+            const templateFeedback = document.getElementById('template-feedback').value;
             
-            if (savedPublicKey) {
-                document.getElementById('public-key').value = savedPublicKey;
-            }
-            if (savedServiceId) {
-                document.getElementById('service-id').value = savedServiceId;
-            }
-            if (savedTemplateIncidencia) {
-                document.getElementById('template-incidencia').value = savedTemplateIncidencia;
-            }
-            if (savedTemplateFeedback) {
-                document.getElementById('template-feedback').value = savedTemplateFeedback;
-            }
-            
-            // Guardar configuración
-            document.getElementById('save-config').addEventListener('click', function() {
-                const publicKey = document.getElementById('public-key').value;
-                const serviceId = document.getElementById('service-id').value;
-                const templateIncidencia = document.getElementById('template-incidencia').value;
-                const templateFeedback = document.getElementById('template-feedback').value;
+            if (publicKey && serviceId) {
+                localStorage.setItem('emailjs_public_key', publicKey);
+                localStorage.setItem('emailjs_service_id', serviceId);
+                localStorage.setItem('emailjs_template_incidencia', templateIncidencia);
+                localStorage.setItem('emailjs_template_feedback', templateFeedback);
                 
-                if (publicKey && serviceId) {
-                    // Guardar en localStorage
-                    localStorage.setItem('emailjs_public_key', publicKey);
-                    localStorage.setItem('emailjs_service_id', serviceId);
-                    localStorage.setItem('emailjs_template_incidencia', templateIncidencia);
-                    localStorage.setItem('emailjs_template_feedback', templateFeedback);
-                    
-                    // Inicializar EmailJS
-                    emailjs.init(publicKey);
-                    
-                    showNotification('Configuración guardada correctamente');
+                emailjs.init(publicKey);
+                showNotification('Configuración de EmailJS guardada correctamente');
+            } else {
+                showNotification('Por favor, complete al menos Public Key y Service ID', true);
+            }
+        });
+        
+        // Guardar configuración ImgBB
+        document.getElementById('save-imgbb-config').addEventListener('click', function() {
+            const imgbbApiKey = document.getElementById('imgbb-api-key').value;
+            if (imgbbApiKey) {
+                localStorage.setItem('imgbb_api_key', imgbbApiKey);
+                showNotification('API Key de ImgBB guardada correctamente');
+            } else {
+                showNotification('Por favor, ingrese una API Key de ImgBB', true);
+            }
+        });
+        
+        // Si ya hay configuración guardada, inicializar EmailJS
+        if (savedPublicKey && savedServiceId) {
+            emailjs.init(savedPublicKey);
+        }
+        
+        const selectorButtons = document.querySelectorAll('.selector-btn');
+        const forms = document.querySelectorAll('.form-container');
+        const notification = document.getElementById('notification');
+        
+        function showNotification(message, isError = false) {
+            notification.textContent = message;
+            notification.classList.toggle('error', isError);
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+        }
+        
+        selectorButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const formId = this.getAttribute('data-form');
+                
+                // Actualizar botones
+                selectorButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Mostrar formulario correspondiente
+                forms.forEach(form => form.classList.remove('active'));
+                document.getElementById(`${formId}-form`).classList.add('active');
+            });
+        });
+        
+        // Configurar selección de nivel de incidencia
+        const severityButtons = document.querySelectorAll('.severity-btn');
+        severityButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                severityButtons.forEach(btn => btn.classList.remove('selected'));
+                this.classList.add('selected');
+                document.getElementById('nivel-incidencia').value = this.getAttribute('data-value');
+            });
+        });
+        
+        // Configurar carga de imagen
+        const imageUpload = document.getElementById('image-upload');
+        const imageInput = document.getElementById('imagen-incidencia');
+        const imagePreview = document.getElementById('image-preview');
+        const removeImageBtn = document.getElementById('remove-image');
+        const imageWarning = document.getElementById('image-warning');
+        const uploadProgress = document.getElementById('upload-progress');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const imagenUrlInput = document.getElementById('imagen-url');
+        
+        imageUpload.addEventListener('click', () => imageInput.click());
+        
+        imageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                // Verificar tamaño de la imagen
+                if (file.size > 5000000) { // 5MB
+                    imageWarning.style.display = 'block';
                 } else {
-                    showNotification('Por favor, complete al menos Public Key y Service ID', true);
+                    imageWarning.style.display = 'none';
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    removeImageBtn.style.display = 'block';
+                    
+                    // Subir imagen a ImgBB automáticamente
+                    uploadImageToImgBB(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Eliminar imagen seleccionada
+        removeImageBtn.addEventListener('click', function() {
+            imagePreview.style.display = 'none';
+            this.style.display = 'none';
+            imageInput.value = '';
+            imageWarning.style.display = 'none';
+            uploadProgress.style.display = 'none';
+            imagenUrlInput.value = '';
+        });
+        
+        // Función para subir imagen a ImgBB
+        async function uploadImageToImgBB(imageData) {
+            const imgbbApiKey = localStorage.getItem('imgbb_api_key');
+            if (!imgbbApiKey) {
+                showNotification('Por favor, configure primero la API Key de ImgBB', true);
+                return;
+            }
+            
+            uploadProgress.style.display = 'block';
+            progressBar.style.width = '0%';
+            progressText.textContent = '0%';
+            
+            try {
+                const formData = new FormData();
+                formData.append('image', imageData.split(',')[1]);
+                
+                // Simular progreso de subida (ImgBB no ofrece progreso real en su API)
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 5;
+                    if (progress <= 90) {
+                        progressBar.style.width = `${progress}%`;
+                        progressText.textContent = `${progress}%`;
+                    }
+                }, 200);
+                
+                const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                clearInterval(progressInterval);
+                
+                const data = await response.json();
+                if (data.success) {
+                    progressBar.style.width = '100%';
+                    progressText.textContent = '100%';
+                    imagenUrlInput.value = data.data.url;
+                    showNotification('Imagen subida correctamente a ImgBB');
+                    
+                    // Ocultar barra de progreso después de 2 segundos
+                    setTimeout(() => {
+                        uploadProgress.style.display = 'none';
+                    }, 2000);
+                } else {
+                    throw new Error(data.error?.message || 'Error al subir la imagen');
+                }
+            } catch (error) {
+                console.error("Error subiendo imagen:", error);
+                showNotification('Error al subir la imagen: ' + error.message, true);
+                uploadProgress.style.display = 'none';
+            }
+        }
+        
+        // Función para agregar destinatarios
+        function setupAddRecipient() {
+            const addRecipientButtons = document.querySelectorAll('.add-recipient');
+            addRecipientButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const recipientsContainer = this.previousElementSibling;
+                    const recipientCount = recipientsContainer.querySelectorAll('.recipient').length;
+                    
+                    if (recipientCount < 3) {
+                        const newRecipient = document.createElement('div');
+                        newRecipient.className = 'recipient';
+                        newRecipient.innerHTML = `
+                            <input type="email" class="recipient-email" required placeholder="email@ejemplo.com">
+                            <button type="button" class="remove-recipient">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                        recipientsContainer.appendChild(newRecipient);
+                        
+                        // Agregar evento para eliminar destinatario
+                        newRecipient.querySelector('.remove-recipient').addEventListener('click', function() {
+                            this.parentElement.remove();
+                            updateAddRecipientButtons();
+                        });
+                        
+                        updateAddRecipientButtons();
+                    }
+                });
+            });
+        }
+        
+        // Función para eliminar destinatarios
+        function setupRemoveRecipient() {
+            document.querySelectorAll('.remove-recipient').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.parentElement.remove();
+                    updateAddRecipientButtons();
+                });
+            });
+        }
+        
+        function updateAddRecipientButtons() {
+            document.querySelectorAll('.recipients').forEach(container => {
+                const recipientCount = container.querySelectorAll('.recipient').length;
+                const addButton = container.nextElementSibling;
+                addButton.style.display = recipientCount >= 3 ? 'none' : 'block';
+                
+                // Mostrar/ocultar botones de eliminar
+                container.querySelectorAll('.remove-recipient').forEach(btn => {
+                    btn.style.display = recipientCount > 1 ? 'block' : 'none';
+                });
+            });
+        }
+        
+        // Inicializar eventos de destinatarios
+        setupAddRecipient();
+        setupRemoveRecipient();
+        
+        // Establecer fecha actual por defecto
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('incidencia-fecha').value = today;
+        document.getElementById('feedback-fecha').value = today;
+        
+        // Envío de formularios
+        const formsToSubmit = document.querySelectorAll('form');
+        formsToSubmit.forEach(form => {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Verificar que EmailJS está configurado
+                const publicKey = localStorage.getItem('emailjs_public_key');
+                const serviceId = localStorage.getItem('emailjs_service_id');
+                const templateIncidencia = localStorage.getItem('emailjs_template_incidencia');
+                const templateFeedback = localStorage.getItem('emailjs_template_feedback');
+                
+                if (!publicKey || !serviceId) {
+                    showNotification('Por favor, configure EmailJS primero', true);
+                    return;
+                }
+                
+                // Validar destinatarios
+                const recipientEmails = this.querySelectorAll('.recipient-email');
+                let validEmails = true;
+                const emailList = [];
+                
+                recipientEmails.forEach(input => {
+                    if (!input.value.match(/\S+@\S+\.\S+/)) {
+                        validEmails = false;
+                        input.style.borderColor = 'red';
+                    } else {
+                        input.style.borderColor = '';
+                        emailList.push(input.value);
+                    }
+                });
+                
+                if (!validEmails || emailList.length === 0) {
+                    showNotification('Por favor, ingrese direcciones de correo válidas', true);
+                    return;
+                }
+                
+                // Determinar tipo de formulario
+                const isIncidencia = this.id === 'incidencia-form';
+                const templateId = isIncidencia ? 
+                    (templateIncidencia || 'template_incidencia') : 
+                    (templateFeedback || 'template_feedback');
+                
+                // Recopilar datos del formulario (CODIFICADOS)
+                const formData = {
+                    colaborador: encodeForEmailJS(this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-colaborador`).value),
+                    supervisor: encodeForEmailJS(this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-supervisor`).value),
+                    numero: encodeForEmailJS(this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-numero`).value),
+                    asunto: encodeForEmailJS(this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-asunto`).value),
+                    fecha: encodeForEmailJS(this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-fecha`).value),
+                    descripcion: encodeForEmailJS(isIncidencia ? 
+                        this.querySelector('#incidencia-descripcion').value : 
+                        this.querySelector('#feedback-tema').value),
+                    firma_supervisor: encodeForEmailJS(this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-firma-supervisor`).value),
+                    firma_colaborador: encodeForEmailJS(this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-firma-colaborador`).value),
+                    destinatarios: encodeForEmailJS(emailList.join(', ')),
+                    tipo: isIncidencia ? 'Incidencia' : 'Feedback'
+                };
+                
+                // Agregar nivel de incidencia si es un informe de incidencia
+                if (isIncidencia) {
+                    const nivelIncidencia = document.getElementById('nivel-incidencia').value;
+                    if (!nivelIncidencia) {
+                        showNotification('Por favor, seleccione un nivel de incidencia', true);
+                        return;
+                    }
+                    formData.nivel_incidencia = nivelIncidencia;
+                    
+                    // Agregar URL de imagen si existe (SOLUCIÓN SIMPLE)
+                    const imagenUrl = document.getElementById('imagen-url').value;
+                    if (imagenUrl) {
+                        formData.imagen_url = imagenUrl;
+                    }
+                }
+                
+                // DEBUG: Ver datos antes de enviar
+                console.log("=== DATOS A ENVIAR ===");
+                console.log("URL de imagen:", document.getElementById('imagen-url').value);
+                console.log("Datos completos:", formData);
+                
+                // Cambiar texto del botón a "Enviando..."
+                const submitBtn = this.querySelector('.submit-btn');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+                submitBtn.disabled = true;
+                
+                // Obtener elemento de estado de email
+                const emailStatus = this.querySelector('.email-status');
+                emailStatus.textContent = `Enviando a ${emailList.length} destinatario(s)...`;
+                
+                try {
+                    // Enviar correo a cada destinatario individualmente
+                    const sendPromises = emailList.map(email => {
+                        // Crear datos específicos para cada destinatario
+                        const emailData = {
+                            to_email: email,
+                            to_name: email.split('@')[0],
+                            from_name: formData.supervisor || 'Sistema de Informes',
+                            colaborador: formData.colaborador,
+                            supervisor: formData.supervisor,
+                            numero: formData.numero,
+                            asunto: formData.asunto,
+                            fecha: formData.fecha,
+                            descripcion: formData.descripcion,
+                            firma_supervisor: formData.firma_supervisor,
+                            firma_colaborador: formData.firma_colaborador,
+                            destinatarios: formData.destinatarios,
+                            tipo: formData.tipo
+                        };
+                        
+                        // Agregar nivel de incidencia si existe
+                        if (formData.nivel_incidencia) {
+                            emailData.nivel_incidencia = formData.nivel_incidencia;
+                        }
+                        
+                        // Agregar URL de imagen si existe (VARIABLE CLAVE)
+                        if (formData.imagen_url) {
+                            emailData.imagen_url = formData.imagen_url;
+                        }
+                        
+                        console.log("Enviando a:", email, "con imagen:", formData.imagen_url);
+                        return emailjs.send(serviceId, templateId, emailData);
+                    });
+                    
+                    // Esperar a que todos los correos se envíen
+                    const results = await Promise.allSettled(sendPromises);
+                    
+                    // Contar correos exitosos y fallidos
+                    const successful = results.filter(r => r.status === 'fulfilled').length;
+                    const failed = results.filter(r => r.status === 'rejected').length;
+                    
+                    if (failed === 0) {
+                        showNotification(`¡Informe enviado con éxito a ${successful} destinatario(s)!`);
+                        this.reset();
+                        // Limpiar imagen
+                        imagePreview.style.display = 'none';
+                        imageInput.value = '';
+                        removeImageBtn.style.display = 'none';
+                        imageWarning.style.display = 'none';
+                        uploadProgress.style.display = 'none';
+                        // Limpiar selección de nivel
+                        severityButtons.forEach(btn => btn.classList.remove('selected'));
+                        document.getElementById('nivel-incidencia').value = '';
+                        document.getElementById('imagen-url').value = '';
+                        
+                        emailStatus.textContent = `Enviado a ${successful} destinatario(s)`;
+                    } else if (successful > 0) {
+                        showNotification(`Informe enviado a ${successful} destinatario(s), pero falló para ${failed}.`, true);
+                        emailStatus.textContent = `Enviado a ${successful} de ${emailList.length} destinatario(s)`;
+                    } else {
+                        showNotification('Error al enviar el informe a todos los destinatarios', true);
+                        emailStatus.textContent = 'Error en el envío';
+                    }
+                    
+                } catch (error) {
+                    console.error("Error general:", error);
+                    showNotification('Error al enviar el informe: ' + (error.text || "Error desconocido"), true);
+                    emailStatus.textContent = 'Error en el envío';
+                } finally {
+                    // Restaurar texto del botón
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
                 }
             });
-            
-            // Si ya hay configuración guardada, inicializar EmailJS
-            if (savedPublicKey && savedServiceId) {
-                emailjs.init(savedPublicKey);
-            }
-            
-            const selectorButtons = document.querySelectorAll('.selector-btn');
-            const forms = document.querySelectorAll('.form-container');
-            const notification = document.getElementById('notification');
-            
-            function showNotification(message, isError = false) {
-                notification.textContent = message;
-                notification.classList.toggle('error', isError);
-                notification.style.display = 'block';
-                
-                setTimeout(() => {
-                    notification.style.display = 'none';
-                }, 5000);
-            }
-            
-            selectorButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const formId = this.getAttribute('data-form');
-                    
-                    // Actualizar botones
-                    selectorButtons.forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Mostrar formulario correspondiente
-                    forms.forEach(form => form.classList.remove('active'));
-                    document.getElementById(`${formId}-form`).classList.add('active');
-                });
-            });
-            
-            // Función para agregar destinatarios
-            function setupAddRecipient() {
-                const addRecipientButtons = document.querySelectorAll('.add-recipient');
-                addRecipientButtons.forEach(button => {
-                    button.addEventListener('click', function() {
-                        const recipientsContainer = this.previousElementSibling;
-                        const recipientCount = recipientsContainer.querySelectorAll('.recipient').length;
-                        
-                        if (recipientCount < 3) {
-                            const newRecipient = document.createElement('div');
-                            newRecipient.className = 'recipient';
-                            newRecipient.innerHTML = `
-                                <input type="email" class="recipient-email" required placeholder="email@ejemplo.com">
-                                <button type="button" class="remove-recipient">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            `;
-                            recipientsContainer.appendChild(newRecipient);
-                            
-                            // Agregar evento para eliminar destinatario
-                            newRecipient.querySelector('.remove-recipient').addEventListener('click', function() {
-                                this.parentElement.remove();
-                                document.querySelectorAll('.add-recipient').forEach(btn => {
-                                    btn.style.display = 'block';
-                                });
-                            });
-                            
-                            if (recipientCount === 2) {
-                                this.style.display = 'none';
-                            }
-                        }
-                    });
-                });
-            }
-            
-            // Función para eliminar destinatarios
-            function setupRemoveRecipient() {
-                document.querySelectorAll('.remove-recipient').forEach(button => {
-                    button.addEventListener('click', function() {
-                        this.parentElement.remove();
-                        document.querySelectorAll('.add-recipient').forEach(btn => {
-                            btn.style.display = 'block';
-                        });
-                    });
-                });
-            }
-            
-            // Inicializar eventos de destinatarios
-            setupAddRecipient();
-            setupRemoveRecipient();
-            
-            // Envío de formularios
-            const formsToSubmit = document.querySelectorAll('form');
-            formsToSubmit.forEach(form => {
-                form.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    
-                    // Verificar que EmailJS está configurado
-                    const publicKey = localStorage.getItem('emailjs_public_key');
-                    const serviceId = localStorage.getItem('emailjs_service_id');
-                    const templateIncidencia = localStorage.getItem('emailjs_template_incidencia');
-                    const templateFeedback = localStorage.getItem('emailjs_template_feedback');
-                    
-                    if (!publicKey || !serviceId) {
-                        showNotification('Por favor, configure EmailJS primero', true);
-                        return;
-                    }
-                    
-                    // Validar destinatarios
-                    const recipientEmails = this.querySelectorAll('.recipient-email');
-                    let validEmails = true;
-                    const emailList = [];
-                    
-                    recipientEmails.forEach(input => {
-                        if (!input.value.match(/\S+@\S+\.\S+/)) {
-                            validEmails = false;
-                            input.style.borderColor = 'red';
-                        } else {
-                            input.style.borderColor = '';
-                            emailList.push(input.value);
-                        }
-                    });
-                    
-                    if (!validEmails || emailList.length === 0) {
-                        showNotification('Por favor, ingrese direcciones de correo válidas', true);
-                        return;
-                    }
-                    
-                    // Determinar tipo de formulario
-                    const isIncidencia = this.id === 'incidencia-form';
-                    const templateId = isIncidencia ? 
-                        (templateIncidencia || 'template_incidencia') : 
-                        (templateFeedback || 'template_feedback');
-                    
-                    // Recopilar datos del formulario
-                    const formData = {
-                        colaborador: this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-colaborador`).value,
-                        supervisor: this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-supervisor`).value,
-                        numero: this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-numero`).value,
-                        asunto: this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-asunto`).value,
-                        fecha: this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-fecha`).value,
-                        descripcion: isIncidencia ? 
-                            this.querySelector('#incidencia-descripcion').value : 
-                            this.querySelector('#feedback-tema').value,
-                        firma_supervisor: this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-firma-supervisor`).value,
-                        firma_colaborador: this.querySelector(`#${isIncidencia ? 'incidencia' : 'feedback'}-firma-colaborador`).value,
-                        destinatarios: emailList.join(', '),
-                        tipo: isIncidencia ? 'Incidencia' : 'Feedback'
-                    };
-                    
-                    // Cambiar texto del botón a "Enviando..."
-                    const submitBtn = this.querySelector('.submit-btn');
-                    const originalText = submitBtn.innerHTML;
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-                    submitBtn.disabled = true;
-                    
-                    // Obtener elemento de estado de email
-                    const emailStatus = this.querySelector('.email-status');
-                    emailStatus.textContent = `Enviando a ${emailList.length} destinatario(s)...`;
-                    
-                    try {
-                        // Enviar correo a cada destinatario individualmente
-                        const sendPromises = emailList.map(email => {
-                            // Crear datos específicos para cada destinatario
-                            const emailData = {
-                                to_email: email,
-                                to_name: email.split('@')[0],
-                                from_name: formData.supervisor || 'Sistema de Informes',
-                                colaborador: formData.colaborador,
-                                supervisor: formData.supervisor,
-                                numero: formData.numero,
-                                asunto: formData.asunto,
-                                fecha: formData.fecha,
-                                descripcion: formData.descripcion,
-                                firma_supervisor: formData.firma_supervisor,
-                                firma_colaborador: formData.firma_colaborador,
-                                destinatarios: formData.destinatarios,
-                                tipo: formData.tipo
-                            };
-                            
-                            return emailjs.send(serviceId, templateId, emailData);
-                        });
-                        
-                        // Esperar a que todos los correos se envíen
-                        const results = await Promise.allSettled(sendPromises);
-                        
-                        // Contar correos exitosos y fallidos
-                        const successful = results.filter(r => r.status === 'fulfilled').length;
-                        const failed = results.filter(r => r.status === 'rejected').length;
-                        
-                        if (failed === 0) {
-                            showNotification(`¡Informe enviado con éxito a ${successful} destinatario(s)!`);
-                            this.reset();
-                            emailStatus.textContent = `Enviado a ${successful} destinatario(s)`;
-                        } else if (successful > 0) {
-                            showNotification(`Informe enviado a ${successful} destinatario(s), pero falló para ${failed}.`, true);
-                            emailStatus.textContent = `Enviado a ${successful} de ${emailList.length} destinatario(s)`;
-                        } else {
-                            showNotification('Error al enviar el informe a todos los destinatarios', true);
-                            emailStatus.textContent = 'Error en el envío';
-                        }
-                        
-                    } catch (error) {
-                        console.error("Error general:", error);
-                        showNotification('Error al enviar el informe: ' + (error.text || "Error desconocido"), true);
-                        emailStatus.textContent = 'Error en el envío';
-                    } finally {
-                        // Restaurar texto del botón
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.disabled = false;
-                    }
-                });
-            });
-            
-            // Establecer fecha actual por defecto
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('incidencia-fecha').value = today;
-            document.getElementById('feedback-fecha').value = today;
         });
-    </script>
+    });
+</script>
 </body>
 </html>
 
